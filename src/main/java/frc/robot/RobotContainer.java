@@ -16,11 +16,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Aim;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
-  private double MaxAngularRate = 3 * Math.PI; // 3/4 of a rotation per second max angular velocity
+  private double MaxAngularRate = 3 * Math.PI; // Tune
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final CommandXboxController DriverController = new CommandXboxController(0); // My DriverController
@@ -33,11 +34,12 @@ public class RobotContainer {
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                // driving in open loop
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
   
   private void configureBindings() {
+
+    Aim aim = new Aim();
 
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() ->
@@ -56,7 +58,18 @@ public class RobotContainer {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
     drivetrain.registerTelemetry(logger::telemeterize);
+
+    DriverController.b().whileTrue(aim.runOnce(() -> aim.setAimAtSpeaker()));
+
+    DriverController.a().whileTrue(aim.runOnce(() -> aim.setAimUnderStage()));
   }
+ 
+  /*
+  Idk ill fix this
+
+  aim.setDefaultCommand(aim.run(
+    () -> aim.setAimJoystick((manipulatorController.getLeftY()))));
+  */
 
   public RobotContainer() {
     configureBindings();
